@@ -1,0 +1,193 @@
+<div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>TechSolutions</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#!/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="#!/tickets" class="active"><i class="fas fa-ticket-alt"></i> Tickets</a></li>
+            <li ng-if="ticket.currentUser.user_type === 'admin' || ticket.currentUser.user_type === 'director'">
+                <a href="#!/users"><i class="fas fa-users"></i> Users</a>
+            </li>
+            <li><a href="#!/profile"><i class="fas fa-user"></i> Profile</a></li>
+            <li><a href="#" ng-click="$event.preventDefault(); logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Ticket #{{ ticket.ticket.id }}</h1>
+                <a href="#!/tickets" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Tickets
+                </a>
+            </div>
+            
+            <div class="alert alert-danger" ng-if="ticket.error">
+                {{ ticket.error }}
+            </div>
+            
+            <div class="alert alert-success" ng-if="ticket.success">
+                {{ ticket.success }}
+            </div>
+            
+            <div ng-if="ticket.loading" class="text-center my-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            
+            <div ng-if="!ticket.loading && !ticket.error && ticket.ticket">
+                <!-- Ticket Details -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">{{ ticket.ticket.title }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <strong>Status:</strong>
+                                <span class="badge ms-2" ng-class="{
+                                    'bg-primary': ticket.ticket.status === 'open',
+                                    'bg-warning': ticket.ticket.status === 'in_progress',
+                                    'bg-success': ticket.ticket.status === 'resolved',
+                                    'bg-secondary': ticket.ticket.status === 'closed'
+                                }">{{ ticket.ticket.status_display }}</span>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Priority:</strong>
+                                <span class="badge ms-2" ng-class="{
+                                    'bg-info': ticket.ticket.priority === 'low',
+                                    'bg-warning': ticket.ticket.priority === 'medium',
+                                    'bg-danger': ticket.ticket.priority === 'high',
+                                    'bg-dark': ticket.ticket.priority === 'urgent'
+                                }">{{ ticket.ticket.priority_display }}</span>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Category:</strong>
+                                <span class="ms-2">{{ ticket.ticket.category_display }}</span>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Created:</strong>
+                                <span class="ms-2">{{ ticket.ticket.created_at | date:'medium' }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Created By:</strong>
+                                <span class="ms-2">{{ ticket.ticket.created_by_name }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Assigned To:</strong>
+                                <span class="ms-2">{{ ticket.ticket.assigned_to_name || 'Unassigned' }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Description:</strong>
+                            <p class="mt-2">{{ ticket.ticket.description }}</p>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="d-flex flex-wrap gap-2">
+                            <!-- Status Actions -->
+                            <div class="dropdown me-2" ng-if="ticket.isAdminOrDirector || ticket.isEmployee || (ticket.isClient && ticket.currentUser.id === ticket.ticket.created_by)">
+                                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="statusDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Change Status
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="statusDropdown">
+                                    <li><a class="dropdown-item" href="#" ng-click="$event.preventDefault(); ticket.changeStatus('open')" ng-if="ticket.ticket.status !== 'open'">Open</a></li>
+                                    <li><a class="dropdown-item" href="#" ng-click="$event.preventDefault(); ticket.changeStatus('in_progress')" ng-if="ticket.ticket.status !== 'in_progress'">In Progress</a></li>
+                                    <li><a class="dropdown-item" href="#" ng-click="$event.preventDefault(); ticket.changeStatus('resolved')" ng-if="ticket.ticket.status !== 'resolved'">Resolved</a></li>
+                                    <li><a class="dropdown-item" href="#" ng-click="$event.preventDefault(); ticket.changeStatus('closed')" ng-if="ticket.ticket.status !== 'closed'">Closed</a></li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Assignment Actions -->
+                            <div class="dropdown" ng-if="ticket.isAdminOrDirector">
+                                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="assignDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Assign Ticket
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="assignDropdown">
+                                    <li ng-repeat="employee in ticket.employees">
+                                        <a class="dropdown-item" href="#" ng-click="$event.preventDefault(); ticket.assignTicket(employee.id)">
+                                            {{ employee.first_name }} {{ employee.last_name }}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Comments -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">Comments</h5>
+                    </div>
+                    <div class="card-body">
+                        <div ng-if="ticket.comments.length === 0" class="text-center my-3">
+                            <p>No comments yet.</p>
+                        </div>
+                        
+                        <div class="comment-list">
+                            <div class="comment" ng-repeat="comment in ticket.comments">
+                                <div class="comment-header">
+                                    <div class="comment-author">{{ comment.user_name }}</div>
+                                    <div class="comment-date">{{ comment.created_at | date:'medium' }}</div>
+                                </div>
+                                <div class="comment-content">
+                                    {{ comment.content }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Add Comment Form -->
+                        <form ng-submit="ticket.addComment()">
+                            <div class="mb-3">
+                                <label for="comment" class="form-label">Add a Comment</label>
+                                <textarea class="form-control" id="comment" rows="3" ng-model="ticket.newComment.content" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary" ng-disabled="ticket.loading">
+                                <span ng-if="ticket.loading">
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    Submitting...
+                                </span>
+                                <span ng-if="!ticket.loading">Add Comment</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Ticket History -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Ticket History</h5>
+                    </div>
+                    <div class="card-body">
+                        <div ng-if="ticket.ticket.history.length === 0" class="text-center my-3">
+                            <p>No history available.</p>
+                        </div>
+                        
+                        <ul class="list-group">
+                            <li class="list-group-item" ng-repeat="history in ticket.ticket.history | orderBy:'-timestamp'">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>{{ history.user_name }}</strong>: {{ history.action }}
+                                    </div>
+                                    <div class="text-muted">{{ history.timestamp | date:'medium' }}</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

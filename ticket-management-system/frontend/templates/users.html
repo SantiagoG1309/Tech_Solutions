@@ -1,0 +1,150 @@
+<div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>TechSolutions</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#!/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="#!/tickets"><i class="fas fa-ticket-alt"></i> Tickets</a></li>
+            <li><a href="#!/users" class="active"><i class="fas fa-users"></i> Users</a></li>
+            <li><a href="#!/profile"><i class="fas fa-user"></i> Profile</a></li>
+            <li><a href="#" ng-click="$event.preventDefault(); logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <h1 class="mb-4">User Management</h1>
+            
+            <div class="alert alert-danger" ng-if="user.error">
+                {{ user.error }}
+            </div>
+            
+            <div class="alert alert-success" ng-if="user.success">
+                {{ user.success }}
+            </div>
+            
+            <div ng-if="user.loading" class="text-center my-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            
+            <div class="row" ng-if="!user.loading">
+                <!-- User List -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Users</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Username</th>
+                                            <th>Email</th>
+                                            <th>Role</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="u in user.users">
+                                            <td>{{ u.id }}</td>
+                                            <td>{{ u.first_name }} {{ u.last_name }}</td>
+                                            <td>{{ u.username }}</td>
+                                            <td>{{ u.email }}</td>
+                                            <td>
+                                                <span class="badge" ng-class="{
+                                                    'bg-info': u.user_type === 'client',
+                                                    'bg-primary': u.user_type === 'employee',
+                                                    'bg-warning': u.user_type === 'director',
+                                                    'bg-danger': u.user_type === 'admin'
+                                                }">{{ u.user_type }}</span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-danger" ng-click="user.deleteUser(u.id)" ng-if="u.id !== user.currentUser.id">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div ng-if="user.users.length === 0" class="text-center my-5">
+                                <p>No users found.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Create User Form -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Create User</h5>
+                        </div>
+                        <div class="card-body">
+                            <form ng-submit="user.createUser()">
+                                <div class="mb-3">
+                                    <label for="first_name" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="first_name" ng-model="user.newUser.first_name" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="last_name" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="last_name" ng-model="user.newUser.last_name" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" class="form-control" id="username" ng-model="user.newUser.username" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" ng-model="user.newUser.email" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="password" ng-model="user.newUser.password" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="user_type" class="form-label">Role</label>
+                                    <select class="form-select" id="user_type" ng-model="user.newUser.user_type" required>
+                                        <option value="employee">Employee</option>
+                                        <option value="director">Director</option>
+                                        <option value="admin">Administrator</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="department" class="form-label">Department</label>
+                                    <input type="text" class="form-control" id="department" ng-model="user.newUser.department">
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary" ng-disabled="user.loading">
+                                        <span ng-if="user.loading">
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                            Creating...
+                                        </span>
+                                        <span ng-if="!user.loading">Create User</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

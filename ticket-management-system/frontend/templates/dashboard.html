@@ -1,0 +1,149 @@
+<div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>TechSolutions</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#!/dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="#!/tickets"><i class="fas fa-ticket-alt"></i> Tickets</a></li>
+            <li ng-if="dashboard.currentUser.user_type === 'admin' || dashboard.currentUser.user_type === 'director'">
+                <a href="#!/users"><i class="fas fa-users"></i> Users</a>
+            </li>
+            <li><a href="#!/profile"><i class="fas fa-user"></i> Profile</a></li>
+            <li><a href="#" ng-click="$event.preventDefault(); logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <h1 class="mb-4">Dashboard</h1>
+            
+            <div class="alert alert-danger" ng-if="dashboard.error">
+                {{ dashboard.error }}
+            </div>
+            
+            <div ng-if="dashboard.loading" class="text-center my-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            
+            <div ng-if="!dashboard.loading && !dashboard.error">
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="stat-value status-open">{{ dashboard.stats.open_tickets }}</div>
+                            <div class="stat-label">Open Tickets</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="stat-value status-in-progress">{{ dashboard.stats.in_progress_tickets }}</div>
+                            <div class="stat-label">In Progress</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="stat-value status-resolved">{{ dashboard.stats.resolved_tickets }}</div>
+                            <div class="stat-label">Resolved</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card">
+                            <div class="stat-value">{{ dashboard.stats.avg_resolution_time }} hrs</div>
+                            <div class="stat-label">Avg. Resolution Time</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">Tickets by Status</h5>
+                            </div>
+                            <div class="card-body" style="height: 250px;">
+                                <chart-js chart-data="dashboard.statusChartData" chart-type="doughnut"></chart-js>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">Tickets by Priority</h5>
+                            </div>
+                            <div class="card-body" style="height: 250px;">
+                                <chart-js chart-data="dashboard.priorityChartData" chart-type="pie"></chart-js>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">Tickets by Category</h5>
+                            </div>
+                            <div class="card-body" style="height: 250px;">
+                                <chart-js chart-data="dashboard.categoryChartData" chart-type="bar"></chart-js>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Tickets -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Recent Tickets</h5>
+                        <a href="#!/tickets" class="btn btn-sm btn-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Title</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="ticket in dashboard.recentTickets">
+                                        <td>{{ ticket.id }}</td>
+                                        <td>{{ ticket.title }}</td>
+                                        <td>
+                                            <span class="badge" ng-class="{
+                                                'bg-primary': ticket.status === 'open',
+                                                'bg-warning': ticket.status === 'in_progress',
+                                                'bg-success': ticket.status === 'resolved',
+                                                'bg-secondary': ticket.status === 'closed'
+                                            }">{{ ticket.status_display }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge" ng-class="{
+                                                'bg-info': ticket.priority === 'low',
+                                                'bg-warning': ticket.priority === 'medium',
+                                                'bg-danger': ticket.priority === 'high',
+                                                'bg-dark': ticket.priority === 'urgent'
+                                            }">{{ ticket.priority_display }}</span>
+                                        </td>
+                                        <td>{{ ticket.created_at | date:'medium' }}</td>
+                                        <td>
+                                            <a href="#!/tickets/{{ ticket.id }}" class="btn btn-sm btn-outline-primary">View</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

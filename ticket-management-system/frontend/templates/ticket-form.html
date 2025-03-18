@@ -1,0 +1,85 @@
+<div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>TechSolutions</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#!/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="#!/tickets" class="active"><i class="fas fa-ticket-alt"></i> Tickets</a></li>
+            <li ng-if="ticket.currentUser.user_type === 'admin' || ticket.currentUser.user_type === 'director'">
+                <a href="#!/users"><i class="fas fa-users"></i> Users</a>
+            </li>
+            <li><a href="#!/profile"><i class="fas fa-user"></i> Profile</a></li>
+            <li><a href="#" ng-click="$event.preventDefault(); logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Create New Ticket</h1>
+                <a href="#!/tickets" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Tickets
+                </a>
+            </div>
+            
+            <div class="alert alert-danger" ng-if="ticket.error">
+                {{ ticket.error }}
+            </div>
+            
+            <div class="alert alert-success" ng-if="ticket.success">
+                {{ ticket.success }}
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form ng-submit="ticket.createTicket()">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="title" ng-model="ticket.newTicket.title" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" ng-model="ticket.newTicket.category" required>
+                                <option value="hardware">Hardware</option>
+                                <option value="software">Software</option>
+                                <option value="network">Network</option>
+                                <option value="account">Account</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="priority" class="form-label">Priority</label>
+                            <select class="form-select" id="priority" ng-model="ticket.newTicket.priority" required>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" rows="5" ng-model="ticket.newTicket.description" required></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" ng-disabled="ticket.loading">
+                                <span ng-if="ticket.loading">
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    Creating...
+                                </span>
+                                <span ng-if="!ticket.loading">Create Ticket</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
